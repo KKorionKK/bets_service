@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  line_provider:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: line_provider
+    volumes:
+      - ./common:/app/common
+      - ./line_provider:/app/line_provider
+    working_dir: /app
+    command: python run_line_provider.py
+    ports:
+      - "8888:8888"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - rabbitmq
+
+  bet_maker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bet_maker
+    volumes:
+      - ./common:/app/common
+      - ./bet_maker:/app/bet_maker
+    working_dir: /app
+    command: python run_bet_maker.py
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - rabbitmq
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    environment:
+      - REDIS_PASSWORD=123gr
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=backend
+      - RABBITMQ_DEFAULT_PASS=123gr
+    ports:
+      - "5672:5672"
+      - "15672:15672"
